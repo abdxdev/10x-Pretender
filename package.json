@@ -2,7 +2,7 @@
   "name": "10x-pretender",
   "displayName": "10x Pretender",
   "description": "Pretend you're typing code you've copied to clipboard",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "abd-dev",
   "icon": "media/icon.png",
   "engines": {

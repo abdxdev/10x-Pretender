@@ -45,12 +45,12 @@ To access the commands, press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (M
    - Watch as the extension types out your clipboard content
 
 2. **Using AI-Generated Code:**
-   - Run the "Generate Code with Gemini" command
+   - Run the "Generate Code with Gemini" command from the command palette
    - Enter a description of the code you want to create
    - Choose whether to start typing the generated code immediately
 
 3. **Using Custom Text:**
-   - Run the "Set Custom Text" command
+   - Run the "Set Custom Text" command from the command palette
    - Enter the text you want to type out
    - Choose whether to start typing immediately
 

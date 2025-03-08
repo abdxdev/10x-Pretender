@@ -14,13 +14,10 @@ class TenXPretender {
 	private typeDisposable: vscode.Disposable | undefined;
 	private genAI: any;
 	private model: any;
-
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
-
 		const config = vscode.workspace.getConfiguration('10x-pretender');
 		const apiKey = config.get<string>('apiKey') || '';
-
 		if (apiKey && apiKey.trim() !== '') {
 			this.initializeGemini(apiKey);
 		}
@@ -32,9 +29,7 @@ class TenXPretender {
 		this.statusBarItem.text = "$(symbol-method) 10x Pretender: Off";
 		this.statusBarItem.command = '10x-pretender.toggle';
 		this.statusBarItem.show();
-
 		this.registerCommands();
-
 		vscode.window.onDidChangeActiveTextEditor(editor => {
 			this.lastActiveEditor = editor;
 		});
@@ -50,7 +45,6 @@ class TenXPretender {
 		try {
 			this.genAI = new GoogleGenerativeAI(apiKey);
 			this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-			vscode.window.showInformationMessage('Gemini API initialized successfully!');
 		} catch (error) {
 			console.error('Failed to initialize Gemini:', error);
 			vscode.window.showErrorMessage('Failed to initialize Gemini API. Check your API key.');
@@ -60,7 +54,6 @@ class TenXPretender {
 	private registerCommands() {
 		let toggleCommand = vscode.commands.registerCommand('10x-pretender.toggle', () => {
 			this.typingMode = !this.typingMode;
-
 			if (this.typingMode) {
 				vscode.env.clipboard.readText().then(text => {
 					if (text) {
@@ -82,22 +75,18 @@ class TenXPretender {
 				vscode.window.showInformationMessage('10x Pretender: Typing mode deactivated!');
 			}
 		});
-
 		let setClipboardCommand = vscode.commands.registerCommand('10x-pretender.setClipboard', async () => {
 			const text = await vscode.window.showInputBox({
 				prompt: 'Enter the text you want to type',
 				placeHolder: 'Paste or type your text here'
 			});
-
 			if (text) {
 				this.clipboardText = text;
 				this.currentIndex = 0;
 				this.pausedIndex = 0;
-
 				const activate = await vscode.window.showQuickPick(['Yes', 'No'], {
 					placeHolder: 'Activate typing mode now?'
 				});
-
 				if (activate === 'Yes') {
 					this.typingMode = true;
 					this.updateStatusBar(true);
@@ -106,17 +95,14 @@ class TenXPretender {
 				}
 			}
 		});
-
 		let geminiCommand = vscode.commands.registerCommand('10x-pretender.geminiPrompt', async () => {
 			const config = vscode.workspace.getConfiguration('10x-pretender');
 			let apiKey = config.get<string>('apiKey') || '';
-
 			if (!apiKey || !this.genAI) {
 				const inputApiKey = await vscode.window.showInputBox({
 					prompt: 'Enter your Google Generative AI API key',
 					password: true
 				});
-
 				if (inputApiKey) {
 					apiKey = inputApiKey;
 					await config.update('apiKey', apiKey, true);
@@ -135,7 +121,6 @@ class TenXPretender {
 				prompt: 'Enter your programming task for Gemini',
 				placeHolder: 'Describe the code you want Gemini to generate'
 			});
-
 			if (!prompt) { return; }
 
 			vscode.window.withProgress(
@@ -147,21 +132,17 @@ class TenXPretender {
 				async (progress) => {
 					try {
 						const generatedCode = await this.generateCodeWithGemini(prompt);
-
 						if (generatedCode) {
-							const match = generatedCode.match(/```python(.*?)```/s);
-							let extractedCode = match ? match[1] : generatedCode;
+							let extractedCode = generatedCode.replace('```python', '').replace('```', '').replaceAll('    ', '\t').trim();
+							extractedCode = extractedCode.replaceAll('\n', '\r\n');
 
-							await vscode.env.clipboard.writeText(extractedCode.trim());
-
-							this.clipboardText = extractedCode.trim();
+							await vscode.env.clipboard.writeText(extractedCode);
+							this.clipboardText = extractedCode;
 							this.currentIndex = 0;
 							this.pausedIndex = 0;
-
 							const activate = await vscode.window.showQuickPick(['Yes', 'No'], {
 								placeHolder: 'Code generated and copied to clipboard. Activate typing mode now?'
 							});
-
 							if (activate === 'Yes') {
 								this.typingMode = true;
 								this.updateStatusBar(true);
@@ -175,7 +156,6 @@ class TenXPretender {
 				}
 			);
 		});
-
 		let cursorChangeDisposable = vscode.window.onDidChangeTextEditorSelection((event) => {
 			if (this.typingMode && event.textEditor === this.lastActiveEditor) {
 				const currentPosition = event.selections[0].active;
@@ -183,14 +163,12 @@ class TenXPretender {
 				const expectedOffset = event.textEditor.document.offsetAt(
 					event.textEditor.document.positionAt(this.currentIndex)
 				);
-
 				if (currentDocumentOffset !== expectedOffset) {
 					this.pausePosition = currentPosition;
 					this.pausedIndex = this.currentIndex;
 				}
 			}
 		});
-
 		this.context.subscriptions.push(
 			toggleCommand,
 			setClipboardCommand,
@@ -207,15 +185,23 @@ Provide only the code implementation without comments.
 Use properly formatted markdown code blocks with the appropriate language specification.
 Ensure the code appears naturally written by a human, avoiding overly structured or robotic patterns.
 Modify string outputs (e.g., in print statements) to avoid full English sentences and ignore casing.
+Always use 4 spaces for indentation.
+Avoid using any external libraries or imports.
+Avoid all sorts of comments and docstrings.
 `;
-
 			const result = await this.model.generateContent([
 				systemInstructions,
 				`Task: ${prompt}`
 			]);
-
 			const response = await result.response;
-			return response.text();
+			const generatedText = response.text();
+
+
+			if (!generatedText) {
+				throw new Error('Received empty response from Gemini API.');
+			}
+
+			return generatedText;
 		} catch (error) {
 			console.error('Error generating code with Gemini:', error);
 			throw error;
@@ -224,17 +210,14 @@ Modify string outputs (e.g., in print statements) to avoid full English sentence
 
 	private registerTypeHandler() {
 		this.unregisterTypeHandler();
-
 		this.typeDisposable = vscode.commands.registerTextEditorCommand('type', (textEditor, edit, args) => {
 			if (!this.typingMode) { return; }
 
 			const { text } = args;
-
 			if (this.pausePosition) {
 				const currentPosition = textEditor.selection.active;
 				const currentDocumentOffset = textEditor.document.offsetAt(currentPosition);
 				const pausedOffset = textEditor.document.offsetAt(this.pausePosition);
-
 				if (currentDocumentOffset === pausedOffset) {
 					this.currentIndex = this.pausedIndex;
 					this.pausePosition = undefined;
@@ -253,20 +236,21 @@ Modify string outputs (e.g., in print statements) to avoid full English sentence
 			} else {
 				if (this.currentIndex < this.clipboardText.length) {
 					const characterToType = this.clipboardText[this.currentIndex];
-
-					if (characterToType === '\n') {
-						edit.insert(
-							textEditor.document.positionAt(this.currentIndex),
-							'\n'
-						);
-					} else {
-						edit.insert(
-							textEditor.document.positionAt(this.currentIndex),
-							characterToType
-						);
-					}
-
+					const currentPosition = textEditor.document.positionAt(this.currentIndex);
+					edit.insert(currentPosition, characterToType);
 					this.currentIndex++;
+
+					const subscription = vscode.workspace.onDidChangeTextDocument((e) => {
+						if (e.document === textEditor.document) {
+							subscription.dispose();
+							const newPosition = textEditor.document.positionAt(this.currentIndex);
+							textEditor.selection = new vscode.Selection(newPosition, newPosition);
+						}
+					});
+
+					setTimeout(() => {
+						subscription.dispose();
+					}, 100);
 
 					if (this.currentIndex >= this.clipboardText.length) {
 						this.typingMode = false;
