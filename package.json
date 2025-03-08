@@ -5,13 +5,16 @@
   "version": "0.0.2",
   "publisher": "abd-dev",
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#f6e2af"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
     "Other"
   ],
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "https://github.com/abdbbdii/10x-Pretender"
   },
