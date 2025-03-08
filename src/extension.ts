@@ -201,11 +201,13 @@ class TenXPretender {
 
 	private async generateCodeWithGemini(prompt: string): Promise<string> {
 		try {
-			const systemInstructions = `Generate code for the following programming task. 
-                Please provide only the code implementation with no comments. 
-                Use markdown code blocks with language specification.
-                Make it humanly. That looks like a real human written it.
-				Also make it so that the strings for example is print statements doesnt contain the full english sentences and ignore casing`;
+			const systemInstructions = `Generate code for the given programming task.
+
+Provide only the code implementation without comments.
+Use properly formatted markdown code blocks with the appropriate language specification.
+Ensure the code appears naturally written by a human, avoiding overly structured or robotic patterns.
+Modify string outputs (e.g., in print statements) to avoid full English sentences and ignore casing.
+`;
 
 			const result = await this.model.generateContent([
 				systemInstructions,
