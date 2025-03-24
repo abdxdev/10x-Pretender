@@ -1,13 +1,12 @@
 <div align="center">
 
-<img src="https://github.com/abdbbdii/10x-Pretender/blob/main/media/icon.png?raw=true" height="150" />
+<img src="https://github.com/abdxdev/10x-Pretender/blob/main/media/icon.png?raw=true" height="150" />
 
 <h1 align="center">10x Pretender</h1>
 
-[![License](https://img.shields.io/github/license/abdbbdii/10x-pretender?style=flat-square&logo=GNU&label=License)](https://github.com/abdbbdii/10x-pretender/tree/main)
-[![GitHub Issues](https://img.shields.io/github/issues/abdbbdii/10x-pretender.svg?style=flat-square&label=Issues&color=FF70A7)](https://github.com/abdbbdii/10x-pretender/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/abdbbdii/10x-pretender.svg?style=flat-square&label=Last%20Commit&color=A06EE1)](https://github.com/abdbbdii/10x-pretender/tree/main)
-
+[![License](https://img.shields.io/github/license/abdxdev/10x-pretender?style=flat-square&logo=GNU&label=License)](https://github.com/abdxdev/10x-pretender/tree/main)
+[![GitHub Issues](https://img.shields.io/github/issues/abdxdev/10x-pretender.svg?style=flat-square&label=Issues&color=FF70A7)](https://github.com/abdxdev/10x-pretender/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/abdxdev/10x-pretender.svg?style=flat-square&label=Last%20Commit&color=A06EE1)](https://github.com/abdxdev/10x-pretender/tree/main)
 <!-- <br />
 [![GitHub Issues](https://img.shields.io/visual-studio-marketplace/stars/abd-dev.10x-pretender?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abd-dev.10x-pretender)
 [![GitHub](https://img.shields.io/visual-studio-marketplace/v/abd-dev.10x-pretender?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abd-dev.10x-pretender&ssr=false#version-history)
@@ -78,8 +77,8 @@ To access the commands, press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (M
 
 ## Contributing
 
-If you encounter any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on [GitHub](https://github.com/abdbbdii/10x-pretender).
+If you encounter any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on [GitHub](https://github.com/abdxdev/10x-pretender).
 
 ## Repository
 
-The source code for this extension is available on [GitHub](https://github.com/abdbbdii/10x-pretender).
+The source code for this extension is available on [GitHub](https://github.com/abdxdev/10x-pretender).
