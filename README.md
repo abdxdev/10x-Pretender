@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/github/license/abdbbdii/10x-pretender?style=flat-square&logo=GNU&label=License)](https://github.com/abdbbdii/10x-pretender/tree/main)
 [![GitHub Issues](https://img.shields.io/github/issues/abdbbdii/10x-pretender.svg?style=flat-square&label=Issues&color=FF70A7)](https://github.com/abdbbdii/10x-pretender/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/abdbbdii/10x-pretender.svg?style=flat-square&label=Last%20Commit&color=A06EE1)](https://github.com/abdbbdii/10x-pretender/tree/main)
+
 <!-- <br />
 [![GitHub Issues](https://img.shields.io/visual-studio-marketplace/stars/abd-dev.10x-pretender?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abd-dev.10x-pretender)
 [![GitHub](https://img.shields.io/visual-studio-marketplace/v/abd-dev.10x-pretender?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abd-dev.10x-pretender&ssr=false#version-history)
@@ -37,6 +38,25 @@ To use the 10x Pretender extension:
 - A stable internet connection is required to use the Gemini code generation feature.
 - You must have a Google Generative AI API key to use the AI code generation feature. You can get one at [Google AI Studio](https://aistudio.google.com/apikey).
 
+## How to Use
+
+1. **Using Clipboard Content:**
+
+   - Copy any code or text to your clipboard
+   - Click the "10x Pretender: Off" button in the status bar to toggle it on
+   - Watch as the extension types out your clipboard content
+
+2. **Using AI-Generated Code:**
+
+   - Run the "Generate Code with Gemini" command from the command palette
+   - Enter a description of the code you want to create
+   - Choose whether to start typing the generated code immediately
+
+3. **Using Custom Text:**
+   - Run the "Set Custom Text" command from the command palette
+   - Enter the text you want to type out
+   - Choose whether to start typing immediately
+
 ## Extension Settings
 
 - `10x-pretender.apiKey`: API key for Google Generative AI.
@@ -48,23 +68,6 @@ To access the commands, press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (M
 - **10x Pretender: Toggle Typing Mode:** `10x-pretender.toggle`
 - **10x Pretender: Set Text to Type:** `10x-pretender.setClipboard`
 - **10x Pretender: Generate Code with Gemini:** `10x-pretender.geminiPrompt`
-
-## How to Use
-
-1. **Using Clipboard Content:**
-   - Copy any code or text to your clipboard
-   - Click the "10x Pretender: Off" button in the status bar to toggle it on
-   - Watch as the extension types out your clipboard content
-
-2. **Using AI-Generated Code:**
-   - Run the "Generate Code with Gemini" command from the command palette
-   - Enter a description of the code you want to create
-   - Choose whether to start typing the generated code immediately
-
-3. **Using Custom Text:**
-   - Run the "Set Custom Text" command from the command palette
-   - Enter the text you want to type out
-   - Choose whether to start typing immediately
 
 ## Use Cases
 

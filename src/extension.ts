@@ -133,7 +133,8 @@ class TenXPretender {
 					try {
 						const generatedCode = await this.generateCodeWithGemini(prompt);
 						if (generatedCode) {
-							let extractedCode = generatedCode.replace('```python', '').replace('```', '').replaceAll('    ', '\t').trim();
+							let extractedCode = generatedCode.replaceAll('\t', '    ').trim();
+							extractedCode = extractedCode.split('\n').slice(1, -2).join('\n');
 							extractedCode = extractedCode.replaceAll('\n', '\r\n');
 
 							await vscode.env.clipboard.writeText(extractedCode);
@@ -186,6 +187,7 @@ Use properly formatted markdown code blocks with the appropriate language specif
 Ensure the code appears naturally written by a human, avoiding overly structured or robotic patterns.
 Modify string outputs (e.g., in print statements) to avoid full English sentences and ignore casing.
 Always use 4 spaces for indentation.
+Avoid full variable names and use short, concise names instead.
 Avoid using any external libraries or imports.
 Avoid all sorts of comments and docstrings.
 `;

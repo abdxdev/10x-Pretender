@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.0.3
+
+### Added
+
+- Added support for all languages supported and not just python
+
 ## v0.0.2
 
 ### Added
