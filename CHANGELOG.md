@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.5
+
+### Added
+
+- Added keyboard shortcut (Ctrl+Alt+P / Cmd+Alt+P on Mac) to pause and resume typing
+- Added command entry for pause/resume in command palette
+
 ## v0.0.4
 
 ### Added

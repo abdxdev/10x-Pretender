@@ -2,7 +2,7 @@
   "name": "10x-pretender",
   "displayName": "10x Pretender",
   "description": "Pretend you're typing code you've copied to clipboard",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "abd-dev",
   "icon": "media/icon.png",
   "galleryBanner": {
@@ -32,6 +32,18 @@
       {
         "command": "10x-pretender.geminiPrompt",
         "title": "10x Pretender: Generate Code with Gemini"
+      },
+      {
+        "command": "10x-pretender.pause",
+        "title": "10x Pretender: Pause/Resume Typing"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "10x-pretender.pause",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
+        "when": "editorTextFocus"
       }
     ],
     "configuration": {
