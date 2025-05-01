@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -14,6 +13,14 @@ class TenXPretender {
 	private typeDisposable: vscode.Disposable | undefined;
 	private genAI: any;
 	private model: any;
+	private keyBuffer: string[] = [];
+	private isProcessingKey = false;
+	private typingStatus: 'running' | 'paused' | 'stopped' = 'stopped';
+	private pauseButton: vscode.StatusBarItem;
+	private stopButton: vscode.StatusBarItem;
+	private restartButton: vscode.StatusBarItem;
+	private isGenerating = false;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
 		const config = vscode.workspace.getConfiguration('10x-pretender');
@@ -29,6 +36,31 @@ class TenXPretender {
 		this.statusBarItem.text = "$(symbol-method) 10x Pretender: Off";
 		this.statusBarItem.command = '10x-pretender.toggle';
 		this.statusBarItem.show();
+
+		this.pauseButton = vscode.window.createStatusBarItem(
+			vscode.StatusBarAlignment.Right,
+			99
+		);
+		this.pauseButton.text = "$(debug-pause)";
+		this.pauseButton.tooltip = "Pause/Resume typing";
+		this.pauseButton.command = '10x-pretender.pause';
+
+		this.stopButton = vscode.window.createStatusBarItem(
+			vscode.StatusBarAlignment.Right,
+			98
+		);
+		this.stopButton.text = "$(debug-stop)";
+		this.stopButton.tooltip = "Stop typing";
+		this.stopButton.command = '10x-pretender.stop';
+
+		this.restartButton = vscode.window.createStatusBarItem(
+			vscode.StatusBarAlignment.Right,
+			97
+		);
+		this.restartButton.text = "$(debug-restart)";
+		this.restartButton.tooltip = "Restart typing from beginning";
+		this.restartButton.command = '10x-pretender.restart';
+
 		this.registerCommands();
 		vscode.window.onDidChangeActiveTextEditor(editor => {
 			this.lastActiveEditor = editor;
@@ -57,22 +89,23 @@ class TenXPretender {
 			if (this.typingMode) {
 				vscode.env.clipboard.readText().then(text => {
 					if (text) {
-						this.clipboardText = text;
+						this.clipboardText = this.normalizeLineEndings(text);
 						this.currentIndex = this.pausedIndex;
-						this.updateStatusBar(true);
+						this.typingStatus = 'running';
+						this.updateStatusBar();
 						this.registerTypeHandler();
-						vscode.window.showInformationMessage('10x Pretender: Typing mode activated!');
 					} else {
 						this.typingMode = false;
-						vscode.window.showWarningMessage('No text in clipboard!');
-						this.updateStatusBar(false);
+						this.typingStatus = 'stopped';
+						this.updateStatusBar();
 						this.unregisterTypeHandler();
+						vscode.window.showWarningMessage('No text in clipboard!');
 					}
 				});
 			} else {
-				this.updateStatusBar(false);
+				this.typingStatus = 'stopped';
+				this.updateStatusBar();
 				this.unregisterTypeHandler();
-				vscode.window.showInformationMessage('10x Pretender: Typing mode deactivated!');
 			}
 		});
 		let setClipboardCommand = vscode.commands.registerCommand('10x-pretender.setClipboard', async () => {
@@ -81,18 +114,13 @@ class TenXPretender {
 				placeHolder: 'Paste or type your text here'
 			});
 			if (text) {
-				this.clipboardText = text;
+				this.clipboardText = this.normalizeLineEndings(text);
 				this.currentIndex = 0;
 				this.pausedIndex = 0;
-				const activate = await vscode.window.showQuickPick(['Yes', 'No'], {
-					placeHolder: 'Activate typing mode now?'
-				});
-				if (activate === 'Yes') {
-					this.typingMode = true;
-					this.updateStatusBar(true);
-					this.registerTypeHandler();
-					vscode.window.showInformationMessage('10x Pretender: Text set and typing mode activated!');
-				}
+				this.typingMode = true;
+				this.typingStatus = 'running';
+				this.updateStatusBar();
+				this.registerTypeHandler();
 			}
 		});
 		let geminiCommand = vscode.commands.registerCommand('10x-pretender.geminiPrompt', async () => {
@@ -123,40 +151,78 @@ class TenXPretender {
 			});
 			if (!prompt) { return; }
 
-			vscode.window.withProgress(
-				{
-					location: vscode.ProgressLocation.Notification,
-					title: "Generating code with Gemini...",
-					cancellable: false
-				},
-				async (progress) => {
-					try {
-						const generatedCode = await this.generateCodeWithGemini(prompt);
-						if (generatedCode) {
-							let extractedCode = generatedCode.replaceAll('\t', '    ').trim();
-							extractedCode = extractedCode.split('\n').slice(1, -2).join('\n');
-							extractedCode = extractedCode.replaceAll('\n', '\r\n');
+			this.isGenerating = true;
+			this.updateStatusBar();
 
-							await vscode.env.clipboard.writeText(extractedCode);
-							this.clipboardText = extractedCode;
-							this.currentIndex = 0;
-							this.pausedIndex = 0;
-							const activate = await vscode.window.showQuickPick(['Yes', 'No'], {
-								placeHolder: 'Code generated and copied to clipboard. Activate typing mode now?'
-							});
-							if (activate === 'Yes') {
-								this.typingMode = true;
-								this.updateStatusBar(true);
-								this.registerTypeHandler();
-								vscode.window.showInformationMessage('10x Pretender: Gemini code ready for typing!');
-							}
-						}
-					} catch (error) {
-						vscode.window.showErrorMessage(`Failed to generate code: ${error}`);
+			try {
+				const generatedCode = await this.generateCodeWithGemini(prompt);
+				if (generatedCode) {
+					let extractedCode = generatedCode.replaceAll('\t', '    ').trim();
+					extractedCode = extractedCode.split('\n').slice(1, -2).join('\n');
+					extractedCode = extractedCode.replaceAll('\n', '\r\n');
+
+					await vscode.env.clipboard.writeText(extractedCode);
+					this.clipboardText = extractedCode;
+					this.currentIndex = 0;
+					this.pausedIndex = 0;
+
+					this.typingMode = true;
+					this.typingStatus = 'running';
+					this.registerTypeHandler();
+				}
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to generate code: ${error}`);
+			} finally {
+				this.isGenerating = false;
+				this.updateStatusBar();
+			}
+		});
+
+		let pauseCommand = vscode.commands.registerCommand('10x-pretender.pause', () => {
+			if (this.typingMode) {
+				if (this.typingStatus === 'running') {
+					this.typingStatus = 'paused';
+					this.pausedIndex = this.currentIndex;
+					this.pausePosition = this.lastActiveEditor?.selection.active;
+					this.pauseButton.text = "$(debug-continue)";
+					this.pauseButton.tooltip = "Resume typing";
+					this.unregisterTypeHandler();
+				} else if (this.typingStatus === 'paused') {
+					this.typingStatus = 'running';
+					this.pauseButton.text = "$(debug-pause)";
+					this.pauseButton.tooltip = "Pause typing";
+					this.registerTypeHandler();
+					if (this.lastActiveEditor) {
+						this.processNextKey(this.lastActiveEditor);
 					}
 				}
-			);
+				this.updateStatusBar();
+			}
 		});
+
+		let stopCommand = vscode.commands.registerCommand('10x-pretender.stop', () => {
+			this.typingMode = false;
+			this.typingStatus = 'stopped';
+			this.pausedIndex = 0;
+			this.currentIndex = 0;
+			this.updateStatusBar();
+			this.unregisterTypeHandler();
+		});
+
+		let restartCommand = vscode.commands.registerCommand('10x-pretender.restart', () => {
+			if (this.clipboardText) {
+				this.typingMode = true;
+				this.typingStatus = 'running';
+				this.currentIndex = 0;
+				this.pausedIndex = 0;
+				this.updateStatusBar();
+				this.registerTypeHandler();
+				if (this.lastActiveEditor) {
+					this.processNextKey(this.lastActiveEditor);
+				}
+			}
+		});
+
 		let cursorChangeDisposable = vscode.window.onDidChangeTextEditorSelection((event) => {
 			if (this.typingMode && event.textEditor === this.lastActiveEditor) {
 				const currentPosition = event.selections[0].active;
@@ -174,10 +240,14 @@ class TenXPretender {
 			toggleCommand,
 			setClipboardCommand,
 			geminiCommand,
+			pauseCommand,
+			stopCommand,
+			restartCommand,
 			cursorChangeDisposable
 		);
 	}
 
+	// Handles AI code generation with specific formatting instructions
 	private async generateCodeWithGemini(prompt: string): Promise<string> {
 		try {
 			const systemInstructions = `Generate code for the given programming task.
@@ -188,7 +258,7 @@ Ensure the code appears naturally written by a human, avoiding overly structured
 Modify string outputs (e.g., in print statements) to avoid full English sentences and ignore casing.
 Always use 4 spaces for indentation.
 Avoid full variable names and use short, concise names instead.
-Avoid using any external libraries or imports.
+Avoid using any external libraries or imports if not mentioned.
 Avoid all sorts of comments and docstrings.
 `;
 			const result = await this.model.generateContent([
@@ -197,7 +267,6 @@ Avoid all sorts of comments and docstrings.
 			]);
 			const response = await result.response;
 			const generatedText = response.text();
-
 
 			if (!generatedText) {
 				throw new Error('Received empty response from Gemini API.');
@@ -210,12 +279,39 @@ Avoid all sorts of comments and docstrings.
 		}
 	}
 
+	// Intercepts keystrokes to simulate human typing from clipboard content
 	private registerTypeHandler() {
 		this.unregisterTypeHandler();
+		this.keyBuffer = [];
+		this.isProcessingKey = false;
+
 		this.typeDisposable = vscode.commands.registerTextEditorCommand('type', (textEditor, edit, args) => {
-			if (!this.typingMode) { return; }
+			if (!this.typingMode || this.typingStatus === 'paused') {
+				return;
+			}
 
 			const { text } = args;
+
+			this.keyBuffer.push(text);
+			this.processNextKey(textEditor);
+		});
+
+		if (this.typeDisposable) {
+			this.context.subscriptions.push(this.typeDisposable);
+		}
+	}
+
+	// Manages complex typing logic including newlines and indentation
+	private async processNextKey(textEditor: vscode.TextEditor) {
+		if (this.isProcessingKey) {
+			return;
+		}
+
+		this.isProcessingKey = true;
+
+		while (this.keyBuffer.length > 0 && this.typingMode && this.typingStatus === 'running') {
+			const currentKey = this.keyBuffer.shift();
+
 			if (this.pausePosition) {
 				const currentPosition = textEditor.selection.active;
 				const currentDocumentOffset = textEditor.document.offsetAt(currentPosition);
@@ -226,47 +322,84 @@ Avoid all sorts of comments and docstrings.
 				}
 			}
 
-			if (text === '\b') {
+			if (this.typingStatus !== 'running') {
+				break;
+			}
+
+			if (currentKey === '\b') {
 				if (this.currentIndex > 0) {
-					const range = new vscode.Range(
-						textEditor.document.positionAt(this.currentIndex - 1),
-						textEditor.document.positionAt(this.currentIndex)
-					);
-					edit.delete(range);
+					await textEditor.edit(editBuilder => {
+						const range = new vscode.Range(
+							textEditor.document.positionAt(this.currentIndex - 1),
+							textEditor.document.positionAt(this.currentIndex)
+						);
+						editBuilder.delete(range);
+					});
 					this.currentIndex--;
 				}
 			} else {
 				if (this.currentIndex < this.clipboardText.length) {
+					if (this.clipboardText[this.currentIndex] === '\r' &&
+						this.currentIndex + 1 < this.clipboardText.length &&
+						this.clipboardText[this.currentIndex + 1] === '\n') {
+						this.currentIndex++;
+						continue;
+					}
+
 					const characterToType = this.clipboardText[this.currentIndex];
 					const currentPosition = textEditor.document.positionAt(this.currentIndex);
-					edit.insert(currentPosition, characterToType);
-					this.currentIndex++;
 
-					const subscription = vscode.workspace.onDidChangeTextDocument((e) => {
-						if (e.document === textEditor.document) {
-							subscription.dispose();
-							const newPosition = textEditor.document.positionAt(this.currentIndex);
-							textEditor.selection = new vscode.Selection(newPosition, newPosition);
+					if (characterToType === '\n') {
+						let nextIndex = this.currentIndex + 1;
+						let whitespaceCount = 0;
+
+						while (nextIndex < this.clipboardText.length &&
+							(this.clipboardText[nextIndex] === ' ' || this.clipboardText[nextIndex] === '\t')) {
+							whitespaceCount++;
+							nextIndex++;
 						}
-					});
 
-					setTimeout(() => {
-						subscription.dispose();
-					}, 100);
+						if (whitespaceCount > 0) {
+							const whitespace = this.clipboardText.substring(this.currentIndex + 1, nextIndex);
+
+							await textEditor.edit(editBuilder => {
+								editBuilder.insert(currentPosition, characterToType + whitespace);
+							});
+
+							this.currentIndex += whitespaceCount + 1;
+						} else {
+							await textEditor.edit(editBuilder => {
+								editBuilder.insert(currentPosition, characterToType);
+							});
+							this.currentIndex++;
+						}
+					} else {
+						await textEditor.edit(editBuilder => {
+							editBuilder.insert(currentPosition, characterToType);
+						});
+						this.currentIndex++;
+					}
+
+					const newPosition = textEditor.document.positionAt(this.currentIndex);
+					textEditor.selection = new vscode.Selection(newPosition, newPosition);
 
 					if (this.currentIndex >= this.clipboardText.length) {
 						this.typingMode = false;
-						this.updateStatusBar(false);
+						this.typingStatus = 'stopped';
+						this.updateStatusBar();
 						this.unregisterTypeHandler();
-						vscode.window.showInformationMessage('10x Pretender: Typing complete!');
 					}
 				}
 			}
-		});
 
-		if (this.typeDisposable) {
-			this.context.subscriptions.push(this.typeDisposable);
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			if (this.typingStatus !== 'running') {
+				break;
+			}
 		}
+
+		this.isProcessingKey = false;
 	}
 
 	private unregisterTypeHandler() {
@@ -274,21 +407,53 @@ Avoid all sorts of comments and docstrings.
 			this.typeDisposable.dispose();
 			this.typeDisposable = undefined;
 		}
+		this.keyBuffer = [];
+		this.isProcessingKey = false;
 	}
 
-	private updateStatusBar(active: boolean) {
-		if (active) {
-			this.statusBarItem.text = "$(symbol-method) 10x Pretender: On";
+	private updateStatusBar() {
+		if (this.isGenerating) {
+			this.statusBarItem.text = "$(sync~spin) Generating code...";
 			this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');
+			this.pauseButton.hide();
+			this.stopButton.hide();
+			this.restartButton.hide();
+		} else if (this.typingStatus === 'running') {
+			this.statusBarItem.text = "$(symbol-method) 10x Pretender: Typing";
+			this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');
+			this.pauseButton.text = "$(debug-pause)";
+			this.pauseButton.tooltip = "Pause typing";
+			this.pauseButton.show();
+			this.stopButton.show();
+			this.restartButton.show();
+		} else if (this.typingStatus === 'paused') {
+			this.statusBarItem.text = "$(debug-pause) 10x Pretender: Paused";
+			this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');
+			this.pauseButton.text = "$(debug-continue)";
+			this.pauseButton.tooltip = "Resume typing";
+			this.pauseButton.show();
+			this.stopButton.show();
+			this.restartButton.show();
 		} else {
 			this.statusBarItem.text = "$(symbol-method) 10x Pretender: Off";
 			this.statusBarItem.backgroundColor = undefined;
+			this.pauseButton.hide();
+			this.stopButton.hide();
+			this.restartButton.hide();
 		}
+	}
+
+	// Ensures consistent line endings across different platforms
+	private normalizeLineEndings(text: string): string {
+		return text.replace(/\r\n|\r|\n/g, '\r\n');
 	}
 
 	dispose() {
 		this.unregisterTypeHandler();
 		this.statusBarItem.dispose();
+		this.pauseButton.dispose();
+		this.stopButton.dispose();
+		this.restartButton.dispose();
 	}
 }
 

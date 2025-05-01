@@ -28,9 +28,11 @@ To use the 10x Pretender extension:
 
 - **Realistic Typing Simulation:** Automatically types text from your clipboard at a natural pace.
 - **AI-Powered Code Generation:** Integrates with Google's Gemini API to generate code snippets based on your plain English descriptions.
-- **Status Bar Integration:** Easily toggle the typing mode on and off with a visible status bar icon.
-- **Seamless Pausing:** Automatically pauses typing when you move the cursor to a different position, and resumes when you return.
+- **Status Bar Controls:** Easily toggle, pause, stop, and restart typing with visible status bar icons.
+- **Pause/Resume Functionality:** Pause typing at any point and resume when you're ready.
+- **Seamless Cursor Tracking:** Automatically pauses typing when you move the cursor to a different position, and resumes when you return.
 - **Custom Text Entry:** Manually input text to be typed out if you don't want to use clipboard content.
+- **Visual Status Indicators:** Clear visual feedback showing the current state (typing, paused, generating).
 
 ## Requirements
 
