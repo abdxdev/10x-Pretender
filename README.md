@@ -60,7 +60,8 @@ To use the 10x Pretender extension:
 
 ## Extension Settings
 
-- `10x-pretender.apiKey`: API key for Google Generative AI.
+- `abd-dev.geminiApiKey`: API key for Google Generative AI.
+- `abd-dev.geminiModel`: Model to use for code generation (default: gemini-2.0-flash-001).
 
 ## Commands
 
@@ -69,6 +70,7 @@ To access the commands, press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (M
 - **10x Pretender: Toggle Typing Mode:** `10x-pretender.toggle`
 - **10x Pretender: Set Text to Type:** `10x-pretender.setClipboard`
 - **10x Pretender: Generate Code with Gemini:** `10x-pretender.geminiPrompt`
+- **10x Pretender: Pause/Resume Typing:** `10x-pretender.pause` (Keyboard shortcut: `Ctrl+Alt+P` on Windows/Linux, `Cmd+Alt+P` on Mac)
 
 ## Use Cases
 

@@ -2,7 +2,7 @@
   "name": "10x-pretender",
   "displayName": "10x Pretender",
   "description": "Pretend you're typing code you've copied to clipboard",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "abd-dev",
   "icon": "media/icon.png",
   "galleryBanner": {
@@ -49,10 +49,15 @@
     "configuration": {
       "title": "10x Pretender",
       "properties": {
-        "10x-pretender.apiKey": {
+        "abd-dev.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "API key for Google Generative AI"
+        },
+        "abd-dev.geminiModel": {
+          "type": "string",
+          "default": "gemini-2.0-flash-001",
+          "description": "Model to use for code generation"
         }
       }
     }

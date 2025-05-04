@@ -23,8 +23,8 @@ class TenXPretender {
 
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
-		const config = vscode.workspace.getConfiguration('10x-pretender');
-		const apiKey = config.get<string>('apiKey') || '';
+		const config = vscode.workspace.getConfiguration();
+		const apiKey = config.get<string>('abd-dev.geminiApiKey') || '';
 		if (apiKey && apiKey.trim() !== '') {
 			this.initializeGemini(apiKey);
 		}
@@ -75,8 +75,10 @@ class TenXPretender {
 		}
 
 		try {
+			const config = vscode.workspace.getConfiguration();
+			const modelName = config.get<string>('abd-dev.geminiModel') || 'gemini-2.0-flash-001';
 			this.genAI = new GoogleGenerativeAI(apiKey);
-			this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+			this.model = this.genAI.getGenerativeModel({ model: modelName });
 		} catch (error) {
 			console.error('Failed to initialize Gemini:', error);
 			vscode.window.showErrorMessage('Failed to initialize Gemini API. Check your API key.');
@@ -124,8 +126,8 @@ class TenXPretender {
 			}
 		});
 		let geminiCommand = vscode.commands.registerCommand('10x-pretender.geminiPrompt', async () => {
-			const config = vscode.workspace.getConfiguration('10x-pretender');
-			let apiKey = config.get<string>('apiKey') || '';
+			const config = vscode.workspace.getConfiguration();
+			let apiKey = config.get<string>('abd-dev.geminiApiKey') || '';
 			if (!apiKey || !this.genAI) {
 				const inputApiKey = await vscode.window.showInputBox({
 					prompt: 'Enter your Google Generative AI API key',
@@ -133,7 +135,7 @@ class TenXPretender {
 				});
 				if (inputApiKey) {
 					apiKey = inputApiKey;
-					await config.update('apiKey', apiKey, true);
+					await config.update('abd-dev.geminiApiKey', apiKey, true);
 					this.initializeGemini(apiKey);
 				} else {
 					return;

@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.6
+
+### Changed
+
+- Updated configuration settings to use `abd-dev.geminiApiKey` instead of `10x-pretender.apiKey`
+- Added new configuration setting `abd-dev.geminiModel` to specify the Gemini model (default: gemini-2.0-flash-001)
+
 ## v0.0.5
 
 ### Added
