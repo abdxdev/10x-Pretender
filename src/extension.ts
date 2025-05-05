@@ -225,6 +225,19 @@ class TenXPretender {
 			}
 		});
 
+		let setApiKeyCommand = vscode.commands.registerCommand('abd-dev.setApiKey', async () => {
+			const inputApiKey = await vscode.window.showInputBox({
+				prompt: 'Enter your Google Generative AI API key',
+				password: true
+			});
+			if (inputApiKey) {
+				const config = vscode.workspace.getConfiguration();
+				await config.update('abd-dev.geminiApiKey', inputApiKey, true);
+				this.initializeGemini(inputApiKey);
+				vscode.window.showInformationMessage('Gemini API key has been set successfully.');
+			}
+		});
+
 		let cursorChangeDisposable = vscode.window.onDidChangeTextEditorSelection((event) => {
 			if (this.typingMode && event.textEditor === this.lastActiveEditor) {
 				const currentPosition = event.selections[0].active;
@@ -245,6 +258,7 @@ class TenXPretender {
 			pauseCommand,
 			stopCommand,
 			restartCommand,
+			setApiKeyCommand,
 			cursorChangeDisposable
 		);
 	}

@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.7
+
+### Added
+
+- Added dedicated command 'abd-dev: Set Gemini API Key' to set the API key through command palette
+- Improved API key management with secure password input
+
 ## v0.0.6
 
 ### Changed

@@ -2,22 +2,31 @@
   "name": "10x-pretender",
   "displayName": "10x Pretender",
   "description": "Pretend you're typing code you've copied to clipboard",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "publisher": "abd-dev",
   "icon": "media/icon.png",
   "galleryBanner": {
     "color": "#f6e2af"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
-    "Other"
+    "AI"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/abdbbdii/10x-Pretender"
+    "url": "https://github.com/abdxdev/10x-Pretender"
   },
+  "keywords": [
+    "ai",
+    "code",
+    "typing",
+    "pretender",
+    "automation"
+  ],
+  "author": "abd-dev",
+  "license": "MIT",
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -36,6 +45,10 @@
       {
         "command": "10x-pretender.pause",
         "title": "10x Pretender: Pause/Resume Typing"
+      },
+      {
+        "command": "abd-dev.setApiKey",
+        "title": "abd-dev: Set Gemini API Key"
       }
     ],
     "keybindings": [
@@ -80,7 +93,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.17.32",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.60.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "@vscode/test-cli": "^0.0.10",
